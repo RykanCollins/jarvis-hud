@@ -100,15 +100,17 @@ class RadarApp:
         self.root = tk.Tk()
         self.root.title("JARVIS RADAR")
         self.root.geometry(f"{SIZE}x{SIZE}+20+40")
-        self.root.overrideredirect(True)       # no window decorations
+        self.root.overrideredirect(True)
         self.root.attributes("-topmost", False)
         self.root.attributes("-alpha", 0.88)
         self.root.config(bg=C_BG)
-        self.root.wm_attributes("-type", "desktop")      # stays below windows
 
         self.canvas = tk.Canvas(self.root, width=SIZE, height=SIZE,
                                 bg=C_BG, highlightthickness=0)
         self.canvas.pack()
+
+        # Pin to desktop layer after window is mapped
+        self.root.after(300, self._pin_to_desktop)
 
         # drag to reposition
         self._drag_x = self._drag_y = 0
@@ -131,6 +133,20 @@ class RadarApp:
         y = self.root.winfo_y() + dy
         self.root.geometry(f"+{x}+{y}")
         self._drag_x, self._drag_y = e.x_root, e.y_root
+
+    def _pin_to_desktop(self):
+        wid = hex(self.root.winfo_id())
+        # Set window type to desktop so the WM keeps it in the desktop layer
+        subprocess.Popen([
+            "xprop", "-id", wid,
+            "-f", "_NET_WM_WINDOW_TYPE", "32a",
+            "-set", "_NET_WM_WINDOW_TYPE", "_NET_WM_WINDOW_TYPE_DESKTOP"
+        ], stderr=subprocess.DEVNULL)
+        # Also send below all other windows
+        subprocess.Popen(
+            ["wmctrl", "-i", "-r", wid, "-b", "add,below"],
+            stderr=subprocess.DEVNULL
+        )
 
     def _update_data(self):
         self.values = get_values()
