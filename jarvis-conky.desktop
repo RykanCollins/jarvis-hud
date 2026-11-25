@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=JARVIS Conky HUD
+Exec=bash -c "sleep 8 && conky -c ~/.config/conky/jarvis.conf & sleep 1 && conky -c ~/.config/conky/jarvis-radar.conf & sleep 1 && conky -c ~/.config/conky/jarvis-left.conf & sleep 1 && nohup python3 ~/.config/conky/radar_live.py > /tmp/radar.log 2>&1 & disown"
+X-GNOME-Autostart-enabled=true
